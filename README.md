@@ -21,5 +21,9 @@ pip install -r requirements.txt
 ## Run application
 ```shell
 # powershell
-$env:PYTHONPATH="$env:PYTHONPATH;./"
+$env:PYTHONPATH="$env:PYTHONPATH;."
+
+# run
+python fintics_bridge_kiwoom/app.py
+
 ```
