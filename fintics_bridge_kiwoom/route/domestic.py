@@ -18,9 +18,10 @@ def opt10080():
         "기준일자": '20240505',
         "수정주가구분": '0'
     }
-    output_names = ['종목코드', '현재가']
+    output_names = ['종목코드', '일자', '시가', '고가', '저가', '현재가', '거래량']
     output_data = kiwoom_domestic.request_tr("opt10080", input_data, output_names)
 
     # response
-    response = json.dumps(output_data, ensure_ascii=False)
-    return make_response(response)
+    response = json.dumps(output_data, ensure_ascii=False, indent=4)
+    return make_response(response, 200, {"Content-Type": "application/json"})
+
