@@ -1,32 +1,25 @@
+from celery import shared_task
 from PyQt5.QAxContainer import QAxWidget
 import pythoncom
 import queue
+from typing import List
 
 
 class KiwoomApi:
 
     def __init__(self):
         self.ocx = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
-        self.ocx.OnEventConnect.connect(self.OnEventConnect)
         self.ocx.OnReceiveTrData.connect(self.OnReceiveTrData)
         self.login = False
         self.tr = False
+        self.output_names = []
         self.tr_queue = queue.Queue()
-
-    def CommConnect(self):
-        print("CommConnect")
-        self.ocx.dynamicCall("CommConnect()")
-        while self.login is False:
-            pythoncom.PumpWaitingMessages()
-
-    def OnEventConnect(self, code):
-        self.login = True
-        print("login is done", code)
 
     def SetInputValue(self, id, value):
         self.ocx.dynamicCall("SetInputValue(QString, QString)", id, value)
 
-    def CommRqData(self, rqname, trcode, next, screen):
+    def CommRqData(self, rqname, trcode, next, screen, output_names):
+        self.output_names = output_names
         self.ocx.dynamicCall("CommRqData(QString, QString, int, QString)", rqname, trcode, next, screen)
         while self.tr is False:
             pythoncom.PumpWaitingMessages()
@@ -40,16 +33,37 @@ class KiwoomApi:
         self.tr = True
 
         repeatCnt = self.GetRepeatCnt(trcode, record)
-        data = []
+        if repeatCnt == 0:
+            repeatCnt = 1
+
+        rows = []
         for i in range(repeatCnt):
-            date = self.GetCommData(trcode, rqname, i, "일자")
-            open = self.GetCommData(trcode, rqname, i, "시가")
-            data.append([date, open])
+            row = {}
+            for output_name in self.output_names:
+                row[output_name] = self.GetCommData(trcode, rqname, i, output_name)
+            # date = self.GetCommData(trcode, rqname, i, "일자")
+            # open = self.GetCommData(trcode, rqname, i, "시가")
+            rows.append(row)
 
-        self.tr_queue.put((data, next))
-
-
+        self.tr_queue.put(rows)
 
     def GetRepeatCnt(self, trcode, record):
         data = self.ocx.dynamicCall("GetRepeatCnt(QString, QString)", trcode, record)
         return data
+
+
+# kiwoom_api = KiwoomApi()
+# kiwoom_api = {}
+
+# request_api = {}
+# def request_api(tr_code: str, input_data: dict, output_names):
+#
+#     # input
+#     for key, value in input_data.items():
+#         kiwoom_api.SetInputValue(key, value)
+#
+#     # request
+#     kiwoom_api.CommRqData("test", tr_code, 0, "screen", output_names)
+#
+#     # response
+#     return kiwoom_api.tr_queue.get()
