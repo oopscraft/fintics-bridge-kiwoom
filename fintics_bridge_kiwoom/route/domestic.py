@@ -12,19 +12,14 @@ def opt10080():
     symbol = request.args.get('종목코드')
 
     # calls api
+    kiwoom_domestic = current_app.config['KIWOOM_DOMESTIC']
     input_data: dict = {
         "종목코드": symbol,
         "기준일자": '20240505',
-        "수정주가구분": '01'
+        "수정주가구분": '0'
     }
     output_names = ['종목코드', '현재가']
-    send_kiwoom_request = current_app.config['SEND_KIWOOM_REQUEST']
-    output_data = send_kiwoom_request('opt10080', input_data, output_names)
-
-    # kiwoom_api = current_app.config['KIWOOM_API']
-    # kiwoom_api.SetInputValue("종목코드", "005930")
-    # kiwoom_api.CommRqData("test2", "opt10001", 0, "0101", ["종목코드","종목명","시가총액"])
-    # output_data = kiwoom_api.tr_queue.get()
+    output_data = kiwoom_domestic.request_tr("opt10080", input_data, output_names)
 
     # response
     response = json.dumps(output_data, ensure_ascii=False)

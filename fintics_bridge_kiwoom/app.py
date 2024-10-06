@@ -26,6 +26,7 @@ flask.register_blueprint(domestic, url_prefix='/domestic')
 # nest_asyncio 적용
 nest_asyncio.apply()
 
+
 def run_flask():
     flask.run(
         host="0.0.0.0",
@@ -33,6 +34,8 @@ def run_flask():
         debug=True,
         use_reloader=False
     )
+
+
 
 if __name__ == "__main__":
 
@@ -45,14 +48,36 @@ if __name__ == "__main__":
     try:
         app = QApplication(sys.argv)
         kiwoom_domestic = KiwoomDomestic()
-        print("== start request")
-        kiwoom_domestic.request("opt10081", {"종목코드":"005930"}, ["종목명"])
-        print("== end request")
+        kiwoom_domestic.start()
+        flask.config['KIWOOM_DOMESTIC'] = kiwoom_domestic
+
+        # connect
+        kiwoom_domestic.CommConnect()
+
+        # test 1
+        print("== start request 1")
+        kiwoom_domestic.SetInputValue("종목코드", "005930")
+        kiwoom_domestic.SetInputValue("기준일자", "20240404")
+        kiwoom_domestic.SetInputValue("수정주가구분", "0")
+        kiwoom_domestic.SetOutputNames(["종목명", "현재가"])
+        kiwoom_domestic.CommRqData("test1", "opt10081", 0, "0101")
+        response = kiwoom_domestic.response_queue.get()
+        print(response)
+        print("== end request 1")
+
+        # test 2
+        print("== start request 2")
+        kiwoom_domestic.SetInputValue("종목코드", "005930")
+        kiwoom_domestic.SetOutputNames(["종목명", "현재가"])
+        kiwoom_domestic.CommRqData("test1", "opt10001", 0, "0101")
+        response = kiwoom_domestic.response_queue.get()
+        print(response)
+        print("== end request 2")
+
         app.exec_()
         print("#################")
     except KeyboardInterrupt:
         sys.exit(0)
-
 
     # # test kiwoom api
     # kiwoom_api = KiwoomApi()
@@ -67,7 +92,6 @@ if __name__ == "__main__":
     # kiwoom_api.CommRqData("test2", "opt10001", 0, "0101", ["종목코드","종목명","시가총액"])
     # response = kiwoom_api.tr_queue.get()
     # print(response)
-
 
     # # run
     # print("############### == start flask")
