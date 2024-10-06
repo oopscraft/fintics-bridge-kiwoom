@@ -6,14 +6,13 @@ from PyQt5.QtGui import *
 from PyQt5.QAxContainer import *
 from flask import Flask
 import nest_asyncio
-from fintics_bridge_kiwoom.module.kiwoom_api import KiwoomApi
 from fintics_bridge_kiwoom.route.domestic import domestic
 from fintics_bridge_kiwoom.route import overseas
 import queue
 import threading
 import pythoncom
 import queue
-from fintics_bridge_kiwoom.module.kiwoom import Kiwoom
+from fintics_bridge_kiwoom.module.kiwoom_domestic import KiwoomDomestic
 
 # logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -27,13 +26,30 @@ flask.register_blueprint(domestic, url_prefix='/domestic')
 # nest_asyncio 적용
 nest_asyncio.apply()
 
+def run_flask():
+    flask.run(
+        host="0.0.0.0",
+        port=8080,
+        debug=True,
+        use_reloader=False
+    )
 
 if __name__ == "__main__":
+
+    # Flask를 별도 스레드에서 실행
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.daemon = True  # 메인 스레드가 종료되면 Flask 스레드도 종료
+    flask_thread.start()
+
     # login
     try:
         app = QApplication(sys.argv)
-        kiwoom = Kiwoom()
+        kiwoom_domestic = KiwoomDomestic()
+        print("== start request")
+        kiwoom_domestic.request("opt10081", {"종목코드":"005930"}, ["종목명"])
+        print("== end request")
         app.exec_()
+        print("#################")
     except KeyboardInterrupt:
         sys.exit(0)
 
@@ -53,10 +69,11 @@ if __name__ == "__main__":
     # print(response)
 
 
-    # run
-    flask.run(
-        host="0.0.0.0",
-        port=8080,
-        debug=True,
-        use_reloader=False
-    )
+    # # run
+    # print("############### == start flask")
+    # flask.run(
+    #     host="0.0.0.0",
+    #     port=8080,
+    #     debug=True,
+    #     use_reloader=False
+    # )
