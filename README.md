@@ -1,6 +1,14 @@
 # fintics-bridge-kiwoom
 Fintics bridge kiwoom
 
+**(버그 쩔고 해외증권은 안되서 중단함. 배부른 키움증권...)**
+
+## Install OCX
+관리자모드로 cmd 창에서 COM 등록
+```shell
+regsvr32 C:/OpenAPI/khopenapi.ocx
+```
+
 ## Install python(32bit)
 https://www.python.org/downloads/windows/
 

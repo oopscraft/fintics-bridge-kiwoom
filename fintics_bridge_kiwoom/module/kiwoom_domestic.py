@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pythoncom
 from PyQt5.QAxContainer import QAxWidget
 from queue import Queue

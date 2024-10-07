@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 from flask import Blueprint
 
-
-domestic = Blueprint('overseas', __name__)
+overseas = Blueprint('overseas', __name__)
 
 
